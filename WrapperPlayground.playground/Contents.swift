@@ -171,7 +171,7 @@ func split1(email: String) -> (String, String)? {
     return (username, domain)
 }
 
-let splitEmail1 = split1(email: "simbaste52@gmail.com")
+let splitEmail1 = split1(email: "test@gmail.com")
 
 print("unsername = \(String(describing: splitEmail1?.0)) | domain = \(String(describing: splitEmail1?.1))")
 
@@ -199,7 +199,7 @@ func split(email: String) -> TSplitEmail {
     return (username, domain)
 }
 
-let splitEmail = split(email: "simbaste52@gmail.com")
+let splitEmail = split(email: "test@gmail.com")
 
 print("unsername = \(String(describing: splitEmail?.0)) | domain = \(String(describing: splitEmail?.1))")
 
@@ -225,7 +225,7 @@ enum SplitEmail {
     }
 }
 
-let emailSplit = SplitEmail(from: "stephanedarcy.simomba@gmail.com")
+let emailSplit = SplitEmail(from: "prenom.nom@gmail.com")
 
 switch emailSplit {
     case let .valid(username, domain):
@@ -234,8 +234,40 @@ switch emailSplit {
         print("invalid email addess")
 }
 
+protocol Splitter {
+    associatedtype Splitting
+    associatedtype Splitted
+    func split(value: Splitting) -> (Splitted, Splitted)?
+}
 
+/**:
+    An associated type gives a placeholder name to a type that is used as part of the protocol.
+    The actual type to use for that associated type isn’t specified until the protocol is adopted.
+ */
+struct EmailSplitter: Splitter {
+    func split(value: String) -> (String, String)? {
+        let components = value.components(separatedBy: "@")
+        
+        guard components.count == 2,
+            let username = components.first,
+            let domain = components.last,
+            !username.isEmpty && !domain.isEmpty else { return nil }
+        return (username, domain)
+    }
+}
 
+enum Split<Value, S: Splitter> where S.Splitting == Value, S.Splitted == Value {
+    case splitted(Value, Value)
+    case invalid
+    
+    init(_ value: Value, using splitter: S) {
+        if let (first, second) = splitter.split(value: value) {
+            self = .splitted(first, second)
+        } else {
+            self = .invalid
+        }
+    }
+}
 
 
 
